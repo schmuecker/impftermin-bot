@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const Crawler = require('./crawler');
-const cities = require('./data/cities.json');
+const cities = require('../data/cities.json');
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = '1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY';

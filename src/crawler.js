@@ -1,7 +1,7 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require("puppeteer");
 
 const CONFIG = {
-  headless: true,
+  headless: false,
 };
 
 class Crawler {
@@ -30,7 +30,7 @@ class Crawler {
 
       const page = this.page;
 
-      await page.goto('https://www.impfterminservice.de/impftermine');
+      await page.goto("https://www.impfterminservice.de/impftermine");
       await page.waitForTimeout(250);
 
       // accept cookies
@@ -49,7 +49,7 @@ class Crawler {
       if (bundesland) {
         await bundesland.click();
       } else {
-        return callback({ error: 'Kein Bundesland Dropdown gefunden' });
+        return callback({ error: "Kein Bundesland Dropdown gefunden" });
       }
       await page.waitForTimeout(250);
 
@@ -58,7 +58,7 @@ class Crawler {
       if (countyItem) {
         await countyItem.click();
       } else {
-        return callback({ error: 'Kein county item gefunden' });
+        return callback({ error: "Kein county item gefunden" });
       }
       await page.waitForTimeout(250);
 
@@ -69,7 +69,7 @@ class Crawler {
       if (impfzentrum) {
         await impfzentrum.click();
       } else {
-        return callback({ error: 'Kein impfzentrum dropdown gefunden' });
+        return callback({ error: "Kein impfzentrum dropdown gefunden" });
       }
       await page.waitForTimeout(250);
 
@@ -78,7 +78,7 @@ class Crawler {
       if (zipItem) {
         await zipItem.click();
       } else {
-        return callback({ error: 'Kein zip dropdown gefunden' });
+        return callback({ error: "Kein zip dropdown gefunden" });
       }
 
       await page.waitForTimeout(250);
@@ -90,7 +90,7 @@ class Crawler {
       if (zumImpfzentrum) {
         await zumImpfzentrum.click();
       } else {
-        return callback({ error: 'Kein button to continue gefunden' });
+        return callback({ error: "Kein button to continue gefunden" });
       }
 
       await page.waitForTimeout(1000);
@@ -125,10 +125,10 @@ class Crawler {
         if (neinButton) {
           await neinButton.click();
         } else {
-          return callback({ error: 'Kein Nein Button gefunden' });
+          return callback({ error: "Kein Nein Button gefunden" });
         }
       } else {
-        return callback({ error: 'Kein Anspruch Heading gefunden' });
+        return callback({ error: "Kein Anspruch Heading gefunden" });
       }
 
       await page.waitForXPath(
