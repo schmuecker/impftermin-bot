@@ -1,0 +1,177 @@
+{
+  "Baden-Württemberg": [
+    { "zip": "68163", "city": "Mannheim, Maimarkthalle" },
+    { "zip": "69123", "city": "Heidelberg, Gesellschaftshaus Pfaffengrund" },
+    {
+      "zip": "69124",
+      "city": "Heidelberg, Zentrales Impfzentrum Heidelberg - Commissary Patrick-Henry-Village"
+    },
+    {
+      "zip": "69469",
+      "city": "Weinheim, Kreisimpfzentrum Weinheim - 3-Glocken-Center"
+    },
+    {
+      "zip": "70174",
+      "city": "Stuttgart, Impfzentrum Klinikum Stuttgart in der Liederhalle (Hegel-Saal)"
+    },
+    {
+      "zip": "70376",
+      "city": "Stuttgart, Impfzentrum am Robert-Bosch-Krankenhaus "
+    },
+    {
+      "zip": "70629",
+      "city": "Leinfelden-Echterdingen, KIZ Messe Stuttgart (Landkreis Esslingen)"
+    },
+    { "zip": "71065", "city": "Sindelfingen , KIZ Böblingen" },
+    { "zip": "71297", "city": "Mönsheim, KIZ Enzkreis - Appenbergsporthalle" },
+    { "zip": "71334", "city": "Waiblingen, Kreisimpfzentrum Waiblingen" },
+    { "zip": "71636", "city": "Ludwigsburg, Impfzentrum Ludwigsburg" },
+    { "zip": "72072", "city": "Tübingen, Paul Horn Arena" },
+    { "zip": "72213", "city": "Altensteig-Wart, KiZ Kreis Calw" },
+    {
+      "zip": "72280",
+      "city": "Dornstetten, Kreisimpfzentrum Landkreis Freudenstadt"
+    },
+    { "zip": "72469", "city": "Meßstetten, Kreisimpfzentrum Zollernalbkreis" },
+    { "zip": "72762", "city": "Reutlingen, Stadion an der Kreuzeiche" },
+    { "zip": "73037", "city": "Göppingen, Werfthalle im Stauferpark" },
+    { "zip": "73430", "city": "Aalen, KIZ Ostalbkreis" },
+    { "zip": "73730", "city": "Stadt Esslingen am Neckar, KIZ Esslingen" },
+    { "zip": "74081", "city": "Heilbronn, Kreisimpfzentrum Heilbronn" },
+    {
+      "zip": "74360",
+      "city": "Ilsfeld-Auenstein, Kreisimpfzentrum Landkreis Heilbronn"
+    },
+    { "zip": "74549", "city": "Wolpertshausen, KIZ Wolpertshausen" },
+    { "zip": "74585", "city": "Rot am See, ZIZ Rot am See" },
+    { "zip": "74613", "city": "Öhringen, Kreisimpfzentrum Hohenlohekreis" },
+    { "zip": "74821", "city": "Mosbach, Kreisimpfzentrum Mosbach" },
+    {
+      "zip": "74889",
+      "city": "Sinsheim, Kreisimpfzentrum Sinsheim - Parsa-Halle"
+    },
+    { "zip": "75056", "city": "Sulzfeld, Kreisimpfzentrum Sulzfeld" },
+    { "zip": "75175", "city": "Pforzheim, Kreisimpfzentrum Pforzheim" },
+    {
+      "zip": "76137",
+      "city": "Karlsruhe, Kreisimpfzentrum Schwarzwaldhalle Karlsruhe"
+    },
+    { "zip": "76287", "city": "Rheinstetten, Impfzentrum Messe Karlsruhe" },
+    { "zip": "76530", "city": "Baden-Baden, KIZ Kurhaus Baden-Baden" },
+    {
+      "zip": "76646",
+      "city": "Bruchsal-Heidelsheim, Kreisimpfzentrum Bruchsal"
+    },
+    { "zip": "77656", "city": "Offenburg, Messe Offenburg-Ortenau, Halle 1" },
+    {
+      "zip": "77815",
+      "city": "Bühl, Kreisimpfzentrum Landkreis Rastatt in Bühl"
+    },
+    {
+      "zip": "77933",
+      "city": "Lahr / Schwarzwald, KIZ Lahr - Rheintalhalle Lahr"
+    },
+    {
+      "zip": "78056",
+      "city": "Villingen-Schwenningen, Landratsamt Schwarzwald-Baar-Kreis"
+    },
+    {
+      "zip": "78224",
+      "city": "Singen (Hohentwiel), Kreisimpfzentrum Singen (Kreis Konstanz)"
+    },
+    {
+      "zip": "78532",
+      "city": "Tuttlingen, Kreisimpfzentrum Landkreis Tuttlingen"
+    },
+    {
+      "zip": "78628",
+      "city": "Rottweil, Kreisimpfzentrum Rottweil, Stadthalle"
+    },
+    {
+      "zip": "79108",
+      "city": "Freiburg im Breisgau, Zentrales Impfzentrum (ZIZ) Freiburg, Messe Freiburg, Messehalle 2"
+    },
+    { "zip": "79341", "city": "Kenzingen, Kreisimpfzentrum Emmendingen" },
+    { "zip": "79379", "city": "Müllheim, Kreisimpfzentrum Müllheim" },
+    {
+      "zip": "79541",
+      "city": "Lörrach, KIZ Lörrach - Impulsivcenter Lörrach"
+    },
+    {
+      "zip": "79761",
+      "city": "Waldshut-Tiengen, Kreisimpfzentrum Landkreis Waldshut"
+    },
+    {
+      "zip": "88045",
+      "city": "Friedrichshafen, Kreisimpfzentrum Bodenseekreis"
+    },
+    {
+      "zip": "88212",
+      "city": "Ravensburg, Oberschwabenhalle Kreisimpfzentrum Ravensburg"
+    },
+    {
+      "zip": "88367",
+      "city": "Hohentengen, Kreisimpfzentrum Landkreis Sigmaringen"
+    },
+    {
+      "zip": "88444",
+      "city": "Ummendorf, Kreisimpfzentrum Ummendorf (Landkreis Biberach)"
+    },
+    { "zip": "89073", "city": "Ulm, Zentrales Impfzentrum Ulm" },
+    { "zip": "89522", "city": "Heidenheim, Congress Centrum Heidenheim" },
+    {
+      "zip": "89584",
+      "city": "Ehingen (Donau), Kreisimpfzentrum Ehingen (Donau)"
+    },
+    {
+      "zip": "97980",
+      "city": "Bad Mergentheim, Kreisimpfzentrum Main-Tauber-Kreis"
+    }
+  ],
+  "Brandenburg": [
+    { "zip": "03042", "city": "Cottbus, Impfzentrum Cottbus" },
+    { "zip": "04910", "city": "Elsterwerda, Impfzentrum Elsterwerda" },
+    { "zip": "12529", "city": "Schönefeld, Impfzentrum Schönefeld" },
+    { "zip": "14482", "city": "Potsdam, Impfzentrum Potsdam" },
+    { "zip": "14612", "city": "Falkensee, Impfzentrum Falkensee" },
+    { "zip": "14712", "city": "Rathenow, Impfzentrum Rathenow" },
+    {
+      "zip": "14770",
+      "city": "Brandenburg an der Havel, Impfzentrum Brandenburg"
+    },
+    { "zip": "14943", "city": "Luckenwalde, Impfzentrum Luckenwalde" },
+    { "zip": "15234", "city": "Frankfurt (Oder), Impfzentrum Frankfurt" },
+    { "zip": "16225", "city": "Eberswalde, Impfzentrum Eberswalde" },
+    { "zip": "16515", "city": "Oranienburg, Impfzentrum Oranienburg" },
+    { "zip": "16866", "city": "Kyritz, Impfzentrum Kyritz" },
+    { "zip": "17291", "city": "Prenzlau, Impfzentrum Prenzlau" },
+    { "zip": "19348", "city": "Perleberg, Impfzentrum Perleberg" }
+  ],
+  "Hamburg": [
+    {
+      "zip": "20259",
+      "city": "Hamburg, Nur für Menschen ab 70 Jahre mit Wohnsitz in HH. Impfzentrum AGAPLESION DIAKONIEKLINIKUM"
+    },
+    { "zip": "20357", "city": "Hamburg, Corona-Impfzentrum Hamburg" },
+    {
+      "zip": "20537",
+      "city": "Hamburg, Institut für Hygiene und Umwelt Hamburg, Impfzentrum"
+    },
+    {
+      "zip": "21029",
+      "city": "Hamburg, Nur für Menschen ab 70 Jahre mit Wohnsitz in HH. Bergedorf - IZ im Bethesda Krankenhaus"
+    },
+    {
+      "zip": "21075",
+      "city": "Hamburg, Nur für Menschen ab 70 Jahre mit Wohnsitz in HH. Asklepios Klinikum Harburg"
+    },
+    {
+      "zip": "22417",
+      "city": "Hamburg, Nur für Menschen ab 70 Jahre mit Wohnsitz in HH. AK Nord-Heidberg HH Langenhorn"
+    },
+    {
+      "zip": "22457",
+      "city": "Hamburg, Albertinen Krankenhaus - Impfzentrum Kirche am Krankenhaus (ü. 70 Jahre mit Wohnsitz HH)"
+    }
+  ]
+}

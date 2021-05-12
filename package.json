@@ -1,0 +1,19 @@
+{
+  "name": "ipftrm",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "minimist": "1.2.5",
+    "node-telegram-bot-api": "0.53.0",
+    "puppeteer": "9.1.1",
+    "puppeteer-core": "9.1.1",
+    "say": "0.16.0"
+  },
+  "devDependencies": {
+    "eslint": "7.26.0"
+  }
+}
