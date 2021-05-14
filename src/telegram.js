@@ -145,3 +145,17 @@ bot.onText(/\/stop (.+)/, (msg, match) => {
     );
   }
 });
+
+bot.onText(/\/cities$/, (msg) => {
+  const { id } = msg.chat;
+  bot.sendMessage(id, `Verfügbare Städte: \n`);
+
+  Object.entries(cities).forEach(([county, citiesOfCounty]) => {
+    let output = "";
+    output = output + `\n🇩🇪 ${county}`;
+    citiesOfCounty.forEach(({ zip, city }) => {
+      output = output + `\n - ${zip}   ${city.substring(0, 50)}...`;
+    });
+    bot.sendMessage(id, output);
+  });
+});
