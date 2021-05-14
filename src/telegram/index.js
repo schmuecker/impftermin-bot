@@ -1,6 +1,6 @@
 const path = require("path");
-const { klona } = require("klona");
-const { dset } = require("dset");
+const { klona } = require("klona/full");
+const { dset } = require("dset/merge");
 var flatCache = require("flat-cache");
 const TelegramBot = require("node-telegram-bot-api");
 const Crawler = require("../crawler");
@@ -9,7 +9,7 @@ const cities = require("../data/cities.json");
 const token = "1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY";
 const bot = new TelegramBot(token, { polling: true });
 
-var cache = flatCache.load("crawlers", path.resolve("../../cache"));
+var cache = flatCache.load("crawlers", path.join(__dirname, "../../cache"));
 const runningCrawler = klona(cache.all());
 
 /* UTILITIES */
@@ -215,12 +215,12 @@ bot.onText(/\/cities$/, (msg) => {
 /* running command */
 bot.onText(/\/running$/, (msg) => {
   const { id } = msg.chat;
-  bot.sendMessage(id, `👀 Laufende Suchen: \n`);
 
+  let output = "";
+  console.log(runningCrawler);
   Object.values(runningCrawler).forEach(({ city, zip }) => {
-    let output = "";
-    output = output + `\n - ${zip} ${city.substring(0, 50)}...`;
-
-    bot.sendMessage(id, output);
+    output = output + `\n - ${city.substring(0, 50)}...`;
   });
+  console.log(output);
+  bot.sendMessage(id, `👀 Laufende Suchen: \n ${output}`);
 });
