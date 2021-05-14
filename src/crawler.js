@@ -8,15 +8,35 @@ class Crawler {
   constructor() {
     this.browser = undefined;
     this.page = undefined;
+    this.input = undefined;
+    this.callback = undefined;
   }
 
   stop() {
-    this.page && this.page.close();
-    this.browser && this.browser.close();
+    if (this.page && this.browser) {
+      this.page.close();
+      this.browser.close();
+      this.page = undefined;
+      this.browser = undefined;
+    }
+  }
+
+  restart() {
+    if (!this.input || !this.callback) {
+      return console.log(
+        "Crawler",
+        "Restart failed. No input or no callback available."
+      );
+    }
+    this.stop();
+    this.start(this.input, this.callback);
   }
 
   async start(input, callback = console.log) {
     try {
+      this.input = input;
+      this.callback = callback;
+
       const { city, county, zip } = input;
 
       if (!this.page && !this.browser) {

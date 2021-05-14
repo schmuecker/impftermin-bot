@@ -10,6 +10,20 @@ const bot = new TelegramBot(token, { polling: true });
 
 const runningCrawler = {};
 
+setInterval(() => {
+  Object.values(runningCrawler).forEach((crawler) => {
+    const now = Date.now();
+    const differenceInMinutes = Math.floor(
+      (now - crawler.startTime) / (1000 * 60)
+    );
+    if (differenceInMinutes > 15 && crawler.instance) {
+      crawler.instance.restart();
+      console.log("restart", crawler.instance);
+      crawler.startTime = Date.now();
+    }
+  });
+}, 1000 * 60);
+
 function findCity(string) {
   let city;
   let matchedCounty;
@@ -35,7 +49,7 @@ function findCity(string) {
   return { city, county: matchedCounty, zip };
 }
 
-bot.onText(/\/start (.+)/, async (msg, match) => {
+bot.onText(/\/search (.+)/, async (msg, match) => {
   const { id } = msg.chat;
 
   const cityInput = match[1];
@@ -55,15 +69,16 @@ bot.onText(/\/start (.+)/, async (msg, match) => {
   }
 
   // Start search
-  runningCrawler[`${id}_${city}`] = new Crawler();
-  const crawler = runningCrawler[`${id}_${city}`];
+  runningCrawler[`${id}_${city}`] = {
+    instance: new Crawler(),
+    startTime: Date.now(),
+  };
+  const crawler = runningCrawler[`${id}_${city}`].instance;
 
-  crawler.start({ city, county }, ({ started, error, success }) => {
-    if (started) {
-      bot.sendMessage(id, `Impfterminsuche in ${city}, ${county} gestartet.`);
-    }
+  bot.sendMessage(id, `Impfterminsuche in ${city}, ${county} gestartet.`);
+  crawler.start({ city, county }, ({ error, success }) => {
     if (error) {
-      bot.sendMessage(id, `CLI Error: ${error}`);
+      console.log(`CLI Error for ${zip}: ${error}`);
     }
     if (success) {
       bot.sendMessage(id, `🔥 ${success.message} \n👉 ${success.url}`);
@@ -71,11 +86,19 @@ bot.onText(/\/start (.+)/, async (msg, match) => {
   });
 });
 
+bot.onText(/\/search$/, (msg) => {
+  const { id } = msg.chat;
+  bot.sendMessage(
+    id,
+    "Bitte gib eine Stadt oder PLZ an, um die Impfterminsuche zu beginnen. \nBeispiele: \n👉 /search Stuttgart \n👉 /search 70174"
+  );
+});
+
 bot.onText(/\/start$/, (msg) => {
   const { id } = msg.chat;
   bot.sendMessage(
     id,
-    "Bitte gib eine Stadt oder PLZ an, um die Impfterminsuche zu beginnen. \nBeispiele: \n👉 /start Stuttgart \n👉 /start 70174"
+    "Bitte gib eine Stadt oder PLZ an, um die Impfterminsuche zu beginnen. \nBeispiele: \n👉 /search Stuttgart \n👉 /search 70174"
   );
   bot.sendMessage(
     id,
@@ -98,9 +121,10 @@ bot.onText(/\/stop (.+)/, (msg, match) => {
   const { city } = findCity(cityInput);
 
   if (city) {
-    const crawler = runningCrawler[`${id}_${city}`];
+    const crawler = runningCrawler[`${id}_${city}`].instance;
     if (crawler) {
       crawler.stop();
+      delete runningCrawler[`${id}_${city}`];
       bot.sendMessage(id, `Impfterminsuche in ${city} gestoppt.`);
     } else {
       bot.sendMessage(
