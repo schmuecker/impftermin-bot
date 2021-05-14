@@ -6,32 +6,13 @@ const TelegramBot = require("node-telegram-bot-api");
 const Crawler = require("./crawler");
 const cities = require("./data/cities.json");
 
-// replace the value below with the Telegram token you receive from @BotFather
 const token = "1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY";
-
-// Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
 
-// loads the cache, if one does not exists for the given
-// Id a new one will be prepared to be created
 var cache = flatCache.load("crawlers", path.resolve("../cache"));
-
 const runningCrawler = klona(cache.all());
 
-// Restart crawlers every 15 minutes (check every minute)
-setInterval(() => {
-  Object.values(runningCrawler).forEach((crawler) => {
-    const now = Date.now();
-    const differenceInMinutes = Math.floor(
-      (now - crawler.startTime) / (1000 * 60)
-    );
-    if (differenceInMinutes > 15 && crawler.instance) {
-      crawler.instance.restart();
-      console.log("restart", crawler.instance);
-      crawler.startTime = Date.now();
-    }
-  });
-}, 1000 * 60);
+/* UTILITIES */
 
 function findCity(string) {
   let city;
@@ -87,6 +68,8 @@ const startCrawler = ({ crawlerId, chatId, city, county, zip }) => {
   }
 };
 
+/* BOOT UP */
+
 // Start crawlers from cache
 Object.entries(runningCrawler).forEach(
   ([crawlerId, { city, county, zip }], index) => {
@@ -97,34 +80,53 @@ Object.entries(runningCrawler).forEach(
   }
 );
 
+// Restart crawlers every 15 minutes (check every minute)
+setInterval(() => {
+  Object.values(runningCrawler).forEach((crawler) => {
+    const now = Date.now();
+    const differenceInMinutes = Math.floor(
+      (now - crawler.startTime) / (1000 * 60)
+    );
+    if (differenceInMinutes > 15 && crawler.instance) {
+      crawler.instance.restart();
+      console.log("restart", crawler.instance);
+      crawler.startTime = Date.now();
+    }
+  });
+}, 1000 * 60);
+
+/* TELEGRAM MESSAGES */
+
 bot.onText(/\/search (.+)/, async (msg, match) => {
   const { id } = msg.chat;
 
-  const cityInput = match[1];
+  const chosenCities = match[1].split(" ");
 
-  // Check city
-  const { city, county, zip } = findCity(cityInput);
-  if (!city) {
-    return bot.sendMessage(id, `Unbekannte Stadt/PLZ "${cityInput}".`);
-  }
+  chosenCities.forEach((cityInput) => {
+    // Check city
+    const { city, county, zip } = findCity(cityInput);
+    if (!city) {
+      return bot.sendMessage(id, `Unbekannte Stadt/PLZ "${cityInput}".`);
+    }
 
-  const crawlerId = `${id}_${zip}`;
-  // Check running instances
-  if (runningCrawler[crawlerId]) {
-    return bot.sendMessage(
-      id,
-      `Impfterminsuche in "${city}", ${county} läuft bereits.`
-    );
-  }
+    const crawlerId = `${id}_${zip}`;
+    // Check running instances
+    if (runningCrawler[crawlerId]) {
+      return bot.sendMessage(
+        id,
+        `Impfterminsuche in "${city}", ${county} läuft bereits.`
+      );
+    }
 
-  bot.sendMessage(id, `🔎 Impfterminsuche in ${city}, ${county} gestartet.`);
+    bot.sendMessage(id, `🔎 Impfterminsuche in ${city}, ${county} gestartet.`);
 
-  startCrawler({
-    crawlerId,
-    chatId: id,
-    city,
-    county,
-    zip,
+    startCrawler({
+      crawlerId,
+      chatId: id,
+      city,
+      county,
+      zip,
+    });
   });
 });
 
@@ -141,6 +143,10 @@ bot.onText(/\/start$/, (msg) => {
   bot.sendMessage(
     id,
     "Mit dem /search Befehl kannst du die Suche nach einem Impftermin starten. \nBeispiele: \n👉 /search Stuttgart \n👉 /search 70174"
+  );
+  bot.sendMessage(
+    id,
+    "Du kannst auch mehrere Suchen mit einem Befehl starten. \nBeispiele: \n👉 /search 70174 Singen Villingen"
   );
   bot.sendMessage(
     id,
