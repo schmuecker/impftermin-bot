@@ -9,7 +9,7 @@ const cities = require("../data/cities.json");
 const token = "1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY";
 const bot = new TelegramBot(token, { polling: true });
 
-var cache = flatCache.load("crawlers", path.resolve("../cache"));
+var cache = flatCache.load("crawlers", path.resolve("../../cache"));
 const runningCrawler = klona(cache.all());
 
 /* UTILITIES */
@@ -208,6 +208,19 @@ bot.onText(/\/cities$/, (msg) => {
     citiesOfCounty.forEach(({ zip, city }) => {
       output = output + `\n - ${zip}   ${city.substring(0, 50)}...`;
     });
+    bot.sendMessage(id, output);
+  });
+});
+
+/* running command */
+bot.onText(/\/running$/, (msg) => {
+  const { id } = msg.chat;
+  bot.sendMessage(id, `👀 Laufende Suchen: \n`);
+
+  Object.values(runningCrawler).forEach(({ city, zip }) => {
+    let output = "";
+    output = output + `\n - ${zip} ${city.substring(0, 50)}...`;
+
     bot.sendMessage(id, output);
   });
 });
