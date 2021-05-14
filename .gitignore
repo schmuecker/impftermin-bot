@@ -1,2 +1,3 @@
 node_modules
-src/logs/telegram.log.txt
+src/logs
+cache
