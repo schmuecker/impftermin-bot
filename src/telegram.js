@@ -1,9 +1,9 @@
-const TelegramBot = require('node-telegram-bot-api');
-const Crawler = require('./crawler');
-const cities = require('../data/cities.json');
+const TelegramBot = require("node-telegram-bot-api");
+const Crawler = require("./crawler");
+const cities = require("./data/cities.json");
 
 // replace the value below with the Telegram token you receive from @BotFather
-const token = '1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY';
+const token = "1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY";
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
@@ -13,12 +13,14 @@ const runningCrawler = {};
 function findCity(string) {
   let city;
   let matchedCounty;
+  let zip;
   Object.entries(cities).forEach(([county, citiesArray]) => {
     // Check zip codes first
     citiesArray.forEach((object) => {
       if (object.zip === string) {
         city = `${object.zip} ${object.city}`;
         matchedCounty = county;
+        zip = object.zip;
       }
     });
     // Fuzzy search for cities
@@ -26,10 +28,11 @@ function findCity(string) {
       if (object.city.includes(string)) {
         city = `${object.zip} ${object.city}`;
         matchedCounty = county;
+        zip = object.zip;
       }
     });
   });
-  return { city, county: matchedCounty };
+  return { city, county: matchedCounty, zip };
 }
 
 bot.onText(/\/start (.+)/, async (msg, match) => {
@@ -38,7 +41,7 @@ bot.onText(/\/start (.+)/, async (msg, match) => {
   const cityInput = match[1];
 
   // Check city
-  const { city, county } = findCity(cityInput);
+  const { city, county, zip } = findCity(cityInput);
   if (!city) {
     return bot.sendMessage(id, `Unbekannte Stadt "${cityInput}" in ${county}.`);
   }
@@ -63,7 +66,7 @@ bot.onText(/\/start (.+)/, async (msg, match) => {
       bot.sendMessage(id, `CLI Error: ${error}`);
     }
     if (success) {
-      bot.sendMessage(id, `CLI Success: ${success}`);
+      bot.sendMessage(id, `🔥 ${success.message} \n👉 ${success.url}`);
     }
   });
 });
@@ -72,11 +75,11 @@ bot.onText(/\/start$/, (msg) => {
   const { id } = msg.chat;
   bot.sendMessage(
     id,
-    'Bitte gib eine Stadt oder PLZ an, um die Impfterminsuche zu beginnen. \nBeispiele: \n👉 /start Stuttgart \n👉 /start 70174'
+    "Bitte gib eine Stadt oder PLZ an, um die Impfterminsuche zu beginnen. \nBeispiele: \n👉 /start Stuttgart \n👉 /start 70174"
   );
   bot.sendMessage(
     id,
-    'Zum Stoppen der Impfterminsuche kannst du den /stop Befehl verwenden. \nBeispiele: \n👉 /stop Stuttgart \n👉 /stop 70174'
+    "Zum Stoppen der Impfterminsuche kannst du den /stop Befehl verwenden. \nBeispiele: \n👉 /stop Stuttgart \n👉 /stop 70174"
   );
 });
 
@@ -84,7 +87,7 @@ bot.onText(/\/stop$/, (msg) => {
   const { id } = msg.chat;
   bot.sendMessage(
     id,
-    'Bitte gib eine Stadt an, um die Impfterminsuche zu stoppen. \nBeispiel: /stop Stuttgart'
+    "Bitte gib eine Stadt an, um die Impfterminsuche zu stoppen. \nBeispiel: /stop Stuttgart"
   );
 });
 

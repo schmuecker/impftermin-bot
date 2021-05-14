@@ -4,7 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "lint": "eslint"
+    "lint": "eslint",
+    "telegram": "node ./src/telegram.js"
   },
   "dependencies": {
     "minimist": "1.2.5",

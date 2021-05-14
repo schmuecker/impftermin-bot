@@ -97,6 +97,14 @@ class Crawler {
 
       // Warteraum...
       try {
+        const [warteraum] = await page.$x("//h1[contains(., 'Warteraum')]");
+        if (warteraum) {
+          return this.start(input, callback);
+        }
+      } catch (error) {}
+
+      // Warte auf Anspruchprüfung
+      try {
         await page.waitForXPath(
           "//h1[contains(., 'Wurde Ihr Anspruch auf eine Corona-Schutzimpfung bereits geprüft?')]",
           { timeout: 1200000 }
@@ -105,7 +113,7 @@ class Crawler {
         return this.start(input, callback);
       }
 
-      // Wurde ihr Anspruch bereits geprüft?
+      // Anspruchprüfung
       const [anspruchH1] = await page.$x(
         "//h1[contains(., 'Wurde Ihr Anspruch auf eine Corona-Schutzimpfung bereits geprüft?')]"
       );
@@ -131,25 +139,60 @@ class Crawler {
         return callback({ error: "Kein Anspruch Heading gefunden" });
       }
 
-      await page.waitForXPath(
-        "//div[contains(., 'Es wurden keine freien Termine')]",
-        { timeout: 30000 }
-      );
+      await page.waitForTimeout(250);
 
-      // Fail wenn "Es wurden keine freien Termine"
-      const [keineTermine] = await page.$x(
-        "//div[contains(., 'Es wurden keine freien Termine')]"
-      );
-      if (keineTermine) {
-        this.start(input, callback);
-        return;
-      } else {
-        callback({
-          success: `Es sind freie Termine in ${
-            zip ?? city
-          } verfügbar! Jetzt heißt es schnell sein.`,
-        });
-      }
+      // Check auf freie Termine oder auf keine freien Termine
+
+      const checkForSuccess = async () => {
+        try {
+          await page.waitForXPath(
+            "//strong[contains(., 'Gehören Sie einer impfberechtigten Personengruppen an')]",
+            {
+              timeout: 30000,
+            }
+          );
+          const [alter] = await page.$x(
+            "//strong[contains(., 'Gehören Sie einer impfberechtigten Personengruppen an')]"
+          );
+          if (alter) {
+            callback({
+              success: {
+                message: `Es sind freie Termine in ${
+                  zip ?? city
+                } verfügbar! Jetzt heißt es schnell sein.`,
+                url: page.url(),
+              },
+            });
+            // Should click on yes, enter age and continue
+            // const [ja] = await page.$x("//span[contains(., 'Ja')][2]");
+            // if (ja) {
+            //   await ja.click();
+            // } else {
+            //   return callback({ error: "Kein Ja Button gefunden" });
+            // }
+          }
+        } catch (error) {}
+      };
+
+      checkForSuccess();
+
+      const checkForFailure = async () => {
+        try {
+          await page.waitForXPath(
+            "//div[contains(., 'Es wurden keine freien Termine')]",
+            { timeout: 30000 }
+          );
+
+          const [keineTermine] = await page.$x(
+            "//div[contains(., 'Es wurden keine freien Termine')]"
+          );
+          if (keineTermine) {
+            return this.start(input, callback);
+          }
+        } catch (error) {}
+      };
+
+      checkForFailure();
     } catch (error) {
       this.browser && this.browser.close();
       callback({ error });
