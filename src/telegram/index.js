@@ -3,8 +3,8 @@ const { klona } = require("klona");
 const { dset } = require("dset");
 var flatCache = require("flat-cache");
 const TelegramBot = require("node-telegram-bot-api");
-const Crawler = require("./crawler");
-const cities = require("./data/cities.json");
+const Crawler = require("../crawler");
+const cities = require("../data/cities.json");
 
 const token = "1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY";
 const bot = new TelegramBot(token, { polling: true });
@@ -97,6 +97,7 @@ setInterval(() => {
 
 /* TELEGRAM MESSAGES */
 
+/* Search command */
 bot.onText(/\/search (.+)/, async (msg, match) => {
   const { id } = msg.chat;
 
@@ -130,6 +131,7 @@ bot.onText(/\/search (.+)/, async (msg, match) => {
   });
 });
 
+/* Incomplete search command */
 bot.onText(/\/search$/, (msg) => {
   const { id } = msg.chat;
   bot.sendMessage(
@@ -138,6 +140,7 @@ bot.onText(/\/search$/, (msg) => {
   );
 });
 
+/* Start command */
 bot.onText(/\/start$/, (msg) => {
   const { id } = msg.chat;
   bot.sendMessage(
@@ -154,14 +157,7 @@ bot.onText(/\/start$/, (msg) => {
   );
 });
 
-bot.onText(/\/stop$/, (msg) => {
-  const { id } = msg.chat;
-  bot.sendMessage(
-    id,
-    "ℹ️ Bitte gib eine Stadt an, um die Impfterminsuche zu stoppen. \nBeispiel: /stop Stuttgart"
-  );
-});
-
+/* Stop command */
 bot.onText(/\/stop (.+)/, (msg, match) => {
   const { id } = msg.chat;
   const cityInput = match[1];
@@ -192,6 +188,16 @@ bot.onText(/\/stop (.+)/, (msg, match) => {
   }
 });
 
+/* Incomplete stop command */
+bot.onText(/\/stop$/, (msg) => {
+  const { id } = msg.chat;
+  bot.sendMessage(
+    id,
+    "ℹ️ Bitte gib eine Stadt an, um die Impfterminsuche zu stoppen. \nBeispiel: /stop Stuttgart"
+  );
+});
+
+/* Cities command */
 bot.onText(/\/cities$/, (msg) => {
   const { id } = msg.chat;
   bot.sendMessage(id, `Verfügbare Städte: \n`);
