@@ -1,3 +1,7 @@
+const path = require("path");
+const { klona } = require("klona");
+const { dset } = require("dset");
+var flatCache = require("flat-cache");
 const TelegramBot = require("node-telegram-bot-api");
 const Crawler = require("./crawler");
 const cities = require("./data/cities.json");
@@ -8,8 +12,13 @@ const token = "1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY";
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
 
-const runningCrawler = {};
+// loads the cache, if one does not exists for the given
+// Id a new one will be prepared to be created
+var cache = flatCache.load("crawlers", path.resolve("../cache"));
 
+const runningCrawler = klona(cache.all());
+
+// Restart crawlers every 15 minutes (check every minute)
 setInterval(() => {
   Object.values(runningCrawler).forEach((crawler) => {
     const now = Date.now();
@@ -49,6 +58,45 @@ function findCity(string) {
   return { city, county: matchedCounty, zip };
 }
 
+const startCrawler = ({ crawlerId, chatId, city, county, zip }) => {
+  cache.setKey(crawlerId, {
+    city,
+    county,
+    zip,
+  });
+  cache.save(true);
+
+  dset(runningCrawler, crawlerId, {
+    instance: new Crawler(),
+    startTime: Date.now(),
+  });
+
+  const crawler = runningCrawler[crawlerId].instance;
+
+  try {
+    crawler.start({ city, county }, ({ error, success }) => {
+      if (error) {
+        console.log(`CLI Error for ${zip}: ${error}`);
+      }
+      if (success) {
+        bot.sendMessage(chatId, `🔥 ${success.message} \n👉 ${success.url}`);
+      }
+    });
+  } catch (error) {
+    crawler.restart();
+  }
+};
+
+// Start crawlers from cache
+Object.entries(runningCrawler).forEach(
+  ([crawlerId, { city, county, zip }], index) => {
+    setTimeout(() => {
+      const chatId = crawlerId.split("_")[0];
+      startCrawler({ crawlerId, chatId, city, county, zip });
+    }, (index + 1) * 2000);
+  }
+);
+
 bot.onText(/\/search (.+)/, async (msg, match) => {
   const { id } = msg.chat;
 
@@ -60,34 +108,24 @@ bot.onText(/\/search (.+)/, async (msg, match) => {
     return bot.sendMessage(id, `Unbekannte Stadt/PLZ "${cityInput}".`);
   }
 
+  const crawlerId = `${id}_${zip}`;
   // Check running instances
-  if (runningCrawler[`${id}_${city}`]) {
+  if (runningCrawler[crawlerId]) {
     return bot.sendMessage(
       id,
       `Impfterminsuche in "${city}", ${county} läuft bereits.`
     );
   }
 
-  // Start search
-  runningCrawler[`${id}_${city}`] = {
-    instance: new Crawler(),
-    startTime: Date.now(),
-  };
-  const crawler = runningCrawler[`${id}_${city}`].instance;
-
   bot.sendMessage(id, `🔎 Impfterminsuche in ${city}, ${county} gestartet.`);
-  try {
-    crawler.start({ city, county }, ({ error, success }) => {
-      if (error) {
-        console.log(`CLI Error for ${zip}: ${error}`);
-      }
-      if (success) {
-        bot.sendMessage(id, `🔥 ${success.message} \n👉 ${success.url}`);
-      }
-    });
-  } catch (error) {
-    crawler.restart();
-  }
+
+  startCrawler({
+    crawlerId,
+    chatId: id,
+    city,
+    county,
+    zip,
+  });
 });
 
 bot.onText(/\/search$/, (msg) => {
@@ -122,14 +160,16 @@ bot.onText(/\/stop (.+)/, (msg, match) => {
   const { id } = msg.chat;
   const cityInput = match[1];
 
-  const { city } = findCity(cityInput);
+  const { city, zip } = findCity(cityInput);
 
   if (city) {
-    const crawler = runningCrawler[`${id}_${city}`].instance;
+    const crawler = runningCrawler[`${id}_${zip}`].instance;
     if (crawler) {
       try {
         crawler.stop();
-        delete runningCrawler[`${id}_${city}`];
+        delete runningCrawler[`${id}_${zip}`];
+        cache.removeKey(`${id}_${zip}`);
+        cache.save(true);
         bot.sendMessage(id, `🛑 Impfterminsuche in ${city} gestoppt.`);
       } catch (error) {}
     } else {

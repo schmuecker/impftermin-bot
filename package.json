@@ -8,6 +8,9 @@
     "telegram": "node ./src/telegram.js"
   },
   "dependencies": {
+    "dset": "^3.1.0",
+    "flat-cache": "^3.0.4",
+    "klona": "^2.0.4",
     "minimist": "1.2.5",
     "node-telegram-bot-api": "0.53.0",
     "puppeteer": "9.1.1",
