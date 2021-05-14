@@ -4,20 +4,19 @@ const CONFIG = {
   headless: false,
 };
 
+let browserInstance = undefined;
+
 class Crawler {
   constructor() {
-    this.browser = undefined;
     this.page = undefined;
     this.input = undefined;
     this.callback = undefined;
   }
 
   stop() {
-    if (this.page && this.browser) {
+    if (this.page) {
       this.page.close();
-      this.browser.close();
       this.page = undefined;
-      this.browser = undefined;
     }
   }
 
@@ -39,14 +38,16 @@ class Crawler {
 
       const { city, county, zip } = input;
 
-      if (!this.page && !this.browser) {
+      if (!this.page) {
         // Start function is running the first time
         callback({ started: `Impfterminsuche in ${city} gestartet` });
       }
 
-      this.browser =
-        this.browser ?? (await puppeteer.launch({ headless: CONFIG.headless }));
-      this.page = this.page ?? (await this.browser.newPage());
+      if (!browserInstance) {
+        browserInstance = await puppeteer.launch({ headless: CONFIG.headless });
+      }
+
+      this.page = this.page ?? (await browserInstance.newPage());
 
       const page = this.page;
 
@@ -214,7 +215,6 @@ class Crawler {
 
       checkForFailure();
     } catch (error) {
-      this.browser && this.browser.close();
       callback({ error });
     }
   }
