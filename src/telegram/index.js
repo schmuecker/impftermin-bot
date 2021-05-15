@@ -71,14 +71,10 @@ const startCrawler = ({ crawlerId, chatId, city, county, zip }) => {
 /* BOOT UP */
 
 // Start crawlers from cache
-Object.entries(runningCrawler).forEach(
-  ([crawlerId, { city, county, zip }], index) => {
-    setTimeout(() => {
-      const chatId = crawlerId.split("_")[0];
-      startCrawler({ crawlerId, chatId, city, county, zip });
-    }, (index + 1) * 2000);
-  }
-);
+Object.entries(runningCrawler).forEach(([crawlerId, { city, county, zip }]) => {
+  const chatId = crawlerId.split("_")[0];
+  startCrawler({ crawlerId, chatId, city, county, zip });
+});
 
 // Restart crawlers every 15 minutes (check every minute)
 setInterval(() => {

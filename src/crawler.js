@@ -1,34 +1,33 @@
 const puppeteer = require("puppeteer");
 
 const CONFIG = {
-  headless: true,
+  headless: false,
 };
-
-let browserInstance = undefined;
 
 class Crawler {
   constructor() {
+    this.browser = undefined;
     this.page = undefined;
     this.input = undefined;
     this.callback = undefined;
   }
 
-  stop() {
+  async stop() {
     if (this.page) {
-      this.page.close();
+      await this.page.close();
       this.page = undefined;
     }
   }
 
-  restart() {
+  async restart() {
     if (!this.input || !this.callback) {
       return console.log(
         "Crawler",
         "Restart failed. No input or no callback available."
       );
     }
-    this.stop();
-    this.start(this.input, this.callback);
+    await this.stop();
+    await this.start(this.input, this.callback);
   }
 
   async start(input, callback = console.log) {
@@ -43,15 +42,14 @@ class Crawler {
         callback({ started: `Impfterminsuche in ${city} gestartet` });
       }
 
-      if (!browserInstance) {
-        browserInstance = await puppeteer.launch({ headless: CONFIG.headless });
+      if (!this.browser) {
+        this.browser = await puppeteer.launch({ headless: CONFIG.headless });
       }
 
-      this.page = this.page ?? (await browserInstance.newPage());
+      this.page = this.page ?? (await this.browser.newPage());
 
       const page = this.page;
 
-      await page.bringToFront();
       await page.goto("https://www.impfterminservice.de/impftermine");
       await page.waitForTimeout(250);
 
@@ -137,36 +135,6 @@ class Crawler {
         return this.restart();
       }
 
-      // Anspruchprüfung
-      const [anspruchH1] = await page.$x(
-        "//h1[contains(., 'Wurde Ihr Anspruch auf eine Corona-Schutzimpfung bereits geprüft?')]"
-      );
-      await page.waitForTimeout(250);
-      if (anspruchH1) {
-        // accept cookies
-        const [acceptCookies] = await page.$x(
-          "//a[contains(., ' Alle auswählen ')]"
-        );
-        if (acceptCookies) {
-          await acceptCookies.click();
-        }
-        await page.waitForTimeout(250);
-
-        // Klick auf "Nein"
-        const [neinButton] = await page.$x("//span[contains(., 'Nein')]");
-        if (neinButton) {
-          await neinButton.click();
-        } else {
-          return callback({ error: "Kein Nein Button gefunden" });
-        }
-      } else {
-        return callback({ error: "Kein Anspruch Heading gefunden" });
-      }
-
-      await page.waitForTimeout(250);
-
-      // Check auf freie Termine oder auf keine freien Termine
-
       const checkForSuccess = async () => {
         try {
           await page.waitForXPath(
@@ -198,30 +166,56 @@ class Crawler {
         } catch (error) {}
       };
 
+      // Klicke auf Nein und checke Ergebnis
+      // Anspruchprüfung
+      const [anspruchH1] = await page.$x(
+        "//h1[contains(., 'Wurde Ihr Anspruch auf eine Corona-Schutzimpfung bereits geprüft?')]"
+      );
+      await page.waitForTimeout(250);
+      if (anspruchH1) {
+        // accept cookies
+        const [acceptCookies] = await page.$x(
+          "//a[contains(., ' Alle auswählen ')]"
+        );
+        if (acceptCookies) {
+          await acceptCookies.click();
+        }
+        await page.waitForTimeout(250);
+
+        // Klick auf "Nein"
+        const [neinButton] = await page.$x("//span[contains(., 'Nein')]");
+        if (neinButton) {
+          await neinButton.click();
+        } else {
+          return callback({ error: "Kein Nein Button gefunden" });
+        }
+      } else {
+        return callback({ error: "Kein Anspruch Heading gefunden" });
+      }
+
+      await page.waitForTimeout(250);
+
       checkForSuccess();
 
-      const checkForFailure = async () => {
-        try {
-          await page.waitForXPath(
-            "//div[contains(., 'Es wurden keine freien Termine')]",
-            { timeout: 30000 }
-          );
+      try {
+        await page.waitForXPath(
+          "//div[contains(., 'Es wurden keine freien Termine')]",
+          { timeout: 30000 }
+        );
 
-          const [keineTermine] = await page.$x(
-            "//div[contains(., 'Es wurden keine freien Termine')]"
+        const [keineTermine] = await page.$x(
+          "//div[contains(., 'Es wurden keine freien Termine')]"
+        );
+        if (keineTermine) {
+          console.log(
+            zip,
+            "Keine freien Termine - Restarting search in ",
+            city
           );
-          if (keineTermine) {
-            console.log(
-              zip,
-              "Keine freien Termine - Restarting search in ",
-              city
-            );
-            return this.restart();
-          }
-        } catch (error) {}
-      };
-
-      checkForFailure();
+          page.waitForTimeout(500);
+          return this.restart();
+        }
+      } catch (error) {}
     } catch (error) {
       callback({ error });
     }
