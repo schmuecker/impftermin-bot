@@ -87,13 +87,13 @@ setInterval(() => {
     const differenceInMinutes = Math.floor(
       (now - crawler.startTime) / (1000 * 60)
     );
-    if (differenceInMinutes > 15 && crawler.instance) {
+    if (differenceInMinutes > 10 && crawler.instance) {
       crawler.instance.restart();
       console.log("restart", crawler.instance);
       crawler.startTime = Date.now();
     }
   });
-}, 1000 * 60);
+}, 1000 * 10);
 
 /* TELEGRAM MESSAGES */
 

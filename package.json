@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint",
-    "bot": "pm2 start ./src/telegram/index.js --name 'ImpfAlarm' --log ./logs/telegram.log.txt --time"
+    "start": "pm2 start ./src/telegram/index.js --name 'ImpfAlarm' --log ./logs/telegram.log.txt --time",
+    "restart": "pm2 restart ./src/telegram/index.js --name 'ImpfAlarm' --log ./logs/telegram.log.txt --time"
   },
   "dependencies": {
     "dset": "^3.1.0",

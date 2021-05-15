@@ -1,7 +1,7 @@
 const puppeteer = require("puppeteer");
 
 const CONFIG = {
-  headless: false,
+  headless: true,
 };
 
 let browserInstance = undefined;
@@ -51,6 +51,7 @@ class Crawler {
 
       const page = this.page;
 
+      await page.bringToFront();
       await page.goto("https://www.impfterminservice.de/impftermine");
       await page.waitForTimeout(250);
 
@@ -120,7 +121,8 @@ class Crawler {
       try {
         const [warteraum] = await page.$x("//h1[contains(., 'Warteraum')]");
         if (warteraum) {
-          return this.start(input, callback);
+          console.log(zip, "Warteraum - Restarting in ", city);
+          return this.restart();
         }
       } catch (error) {}
 
@@ -131,7 +133,8 @@ class Crawler {
           { timeout: 1200000 }
         );
       } catch (error) {
-        return this.start(input, callback);
+        console.log(zip, "Anspruchfrage nicht gefunden - Restarting in ", city);
+        return this.restart();
       }
 
       // Anspruchprüfung
@@ -208,7 +211,12 @@ class Crawler {
             "//div[contains(., 'Es wurden keine freien Termine')]"
           );
           if (keineTermine) {
-            return this.start(input, callback);
+            console.log(
+              zip,
+              "Keine freien Termine - Restarting search in ",
+              city
+            );
+            return this.restart();
           }
         } catch (error) {}
       };
