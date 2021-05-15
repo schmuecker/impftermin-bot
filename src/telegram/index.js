@@ -214,7 +214,7 @@ bot.onText(/\/running$/, (msg) => {
 
   let output = "";
   console.log(runningCrawler);
-  Object.values(runningCrawler).forEach(({ city, zip }) => {
+  Object.values(runningCrawler).forEach(({ city }) => {
     output = output + `\n - ${city.substring(0, 50)}...`;
   });
   console.log(output);
