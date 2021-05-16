@@ -9,8 +9,18 @@ const cities = require("../data/cities.json");
 const token = "1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY";
 const bot = new TelegramBot(token, { polling: true });
 
-var cache = flatCache.load("crawlers", path.join(__dirname, "../../cache"));
-const runningCrawler = klona(cache.all());
+const crawlerCache = flatCache.load(
+  "crawlers",
+  path.join(__dirname, "../../cache")
+);
+console.log("Get crawler from cache", crawlerCache.all());
+const runningCrawler = klona(crawlerCache.all());
+
+const notifyCache = flatCache.load(
+  "notify",
+  path.join(__dirname, "../../cache")
+);
+console.log("Get notifications from cache", notifyCache.all());
 
 /* UTILITIES */
 
@@ -39,13 +49,13 @@ function findCity(string) {
   return { city, county: matchedCounty, zip };
 }
 
-const startCrawler = ({ crawlerId, chatId, city, county, zip }) => {
-  cache.setKey(crawlerId, {
+const startCrawler = ({ crawlerId, city, county, zip }) => {
+  crawlerCache.setKey(crawlerId, {
     city,
     county,
     zip,
   });
-  cache.save(true);
+  crawlerCache.save(true);
 
   dset(runningCrawler, crawlerId, {
     instance: new Crawler(),
@@ -60,7 +70,15 @@ const startCrawler = ({ crawlerId, chatId, city, county, zip }) => {
         console.log(`CLI Error for ${zip}: ${error}`);
       }
       if (success) {
-        bot.sendMessage(chatId, `🔥 ${success.message} \n👉 ${success.url}`);
+        // Notify all subscribed chats
+        Object.entries(notifyCache.all()).forEach(([chatId, zipCodes]) => {
+          if (zipCodes.includes(zip)) {
+            bot.sendMessage(
+              chatId,
+              `🔥 ${success.message} \n👉 ${success.url}`
+            );
+          }
+        });
       }
     });
   } catch (error) {
@@ -72,8 +90,7 @@ const startCrawler = ({ crawlerId, chatId, city, county, zip }) => {
 
 // Start crawlers from cache
 Object.entries(runningCrawler).forEach(([crawlerId, { city, county, zip }]) => {
-  const chatId = crawlerId.split("_")[0];
-  startCrawler({ crawlerId, chatId, city, county, zip });
+  startCrawler({ crawlerId, city, county, zip });
 });
 
 // Restart crawlers every 15 minutes (check every minute)
@@ -85,7 +102,6 @@ setInterval(() => {
     );
     if (differenceInMinutes > 10 && crawler.instance) {
       crawler.instance.restart();
-      console.log("restart", crawler.instance);
       crawler.startTime = Date.now();
     }
   });
@@ -106,24 +122,46 @@ bot.onText(/\/search (.+)/, async (msg, match) => {
       return bot.sendMessage(id, `Unbekannte Stadt/PLZ "${cityInput}".`);
     }
 
-    const crawlerId = `${id}_${zip}`;
-    // Check running instances
-    if (runningCrawler[crawlerId]) {
-      return bot.sendMessage(
-        id,
-        `Impfterminsuche in "${city}", ${county} läuft bereits.`
-      );
-    }
-
     bot.sendMessage(id, `🔎 Impfterminsuche in ${city}, ${county} gestartet.`);
 
-    startCrawler({
-      crawlerId,
-      chatId: id,
-      city,
-      county,
-      zip,
-    });
+    notifyCache.setKey(id, [...(notifyCache.getKey(id) ?? []), zip]);
+    notifyCache.save(true);
+
+    if (!runningCrawler[zip]) {
+      startCrawler({
+        crawlerId: zip,
+        city,
+        county,
+        zip,
+      });
+    }
+  });
+});
+
+/* Search silent command */
+bot.onText(/\/searchSilent (.+)/, async (msg, match) => {
+  const { id } = msg.chat;
+
+  const chosenCities = match[1].split(" ");
+
+  chosenCities.forEach((cityInput) => {
+    // Check city
+    const { city, county, zip } = findCity(cityInput);
+    if (!city) {
+      return bot.sendMessage(id, `Unbekannte Stadt/PLZ "${cityInput}".`);
+    }
+
+    notifyCache.setKey(id, [...(notifyCache.getKey(id) ?? []), zip]);
+    notifyCache.save(true);
+
+    if (!runningCrawler[zip]) {
+      startCrawler({
+        crawlerId: zip,
+        city,
+        county,
+        zip,
+      });
+    }
   });
 });
 
@@ -154,20 +192,20 @@ bot.onText(/\/start$/, (msg) => {
 });
 
 /* Stop command */
-bot.onText(/\/stop (.+)/, (msg, match) => {
+bot.onText(/\/stop (.+)/, async (msg, match) => {
   const { id } = msg.chat;
   const cityInput = match[1];
 
   const { city, zip } = findCity(cityInput);
 
   if (city) {
-    const crawler = runningCrawler[`${id}_${zip}`].instance;
+    const crawler = runningCrawler[zip].instance;
     if (crawler) {
       try {
-        crawler.stop();
-        delete runningCrawler[`${id}_${zip}`];
-        cache.removeKey(`${id}_${zip}`);
-        cache.save(true);
+        await crawler.stop();
+        delete runningCrawler[zip];
+        crawlerCache.removeKey(zip);
+        crawlerCache.save(true);
         bot.sendMessage(id, `🛑 Impfterminsuche in ${city} gestoppt.`);
       } catch (error) {}
     } else {

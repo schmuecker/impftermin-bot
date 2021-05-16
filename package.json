@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint",
+    "dev": "nodemon ./src/telegram/index.js",
     "start": "pm2 start ./src/telegram/index.js --name 'ImpfAlarm' --log ./logs/telegram.log.txt --time",
     "restart": "pm2 restart ./src/telegram/index.js --name 'ImpfAlarm' --log ./logs/telegram.log.txt --time"
   },
@@ -19,6 +20,8 @@
     "say": "0.16.0"
   },
   "devDependencies": {
-    "eslint": "7.26.0"
+    "eslint": "7.26.0",
+    "nodemon": "^2.0.7",
+    "pm2": "^4.5.6"
   }
 }
