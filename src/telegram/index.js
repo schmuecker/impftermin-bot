@@ -6,32 +6,33 @@ const TelegramBot = require("node-telegram-bot-api");
 const Crawler = require("../crawler");
 const cities = require("../data/cities.json");
 
+/* INIT TELEGRAM BOT */
+
 const token = "1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY";
 const bot = new TelegramBot(token, { polling: true });
 
-const crawlerCache = flatCache.load(
-  "crawlers",
-  path.join(__dirname, "../../cache")
-);
+/* GET CRAWLER + NOTIFICATIONS FROM CACHE*/
+
+// eslint-disable-next-line no-undef
+const cachePath = path.join(__dirname, "../../cache");
+
+const crawlerCache = flatCache.load("crawlers", cachePath);
 console.log("Get crawler from cache", crawlerCache.all());
 const runningCrawler = klona(crawlerCache.all());
 
-const notifyCache = flatCache.load(
-  "notify",
-  path.join(__dirname, "../../cache")
-);
+const notifyCache = flatCache.load("notify", cachePath);
 console.log("Get notifications from cache", notifyCache.all());
 
 /* UTILITIES */
 
-function findCity(string) {
+function findCity(query) {
   let city;
   let matchedCounty;
   let zip;
   Object.entries(cities).forEach(([county, citiesArray]) => {
     // Check zip codes first
     citiesArray.forEach((object) => {
-      if (object.zip === string) {
+      if (object.zip === query) {
         city = `${object.zip} ${object.city}`;
         matchedCounty = county;
         zip = object.zip;
@@ -39,7 +40,7 @@ function findCity(string) {
     });
     // Fuzzy search for cities
     citiesArray.forEach((object) => {
-      if (object.city.includes(string)) {
+      if (object.city.toLowerCase().includes(query.toLowerCase())) {
         city = `${object.zip} ${object.city}`;
         matchedCounty = county;
         zip = object.zip;
@@ -195,30 +196,42 @@ bot.onText(/\/start$/, (msg) => {
 bot.onText(/\/stop (.+)/, async (msg, match) => {
   const { id } = msg.chat;
   const cityInput = match[1];
+  const notifications = notifyCache.all();
+  const userNotifications = notifications[id];
+  console.log(id, notifications);
 
   const { city, zip } = findCity(cityInput);
 
-  if (city) {
-    const crawler = runningCrawler[zip].instance;
-    if (crawler) {
-      try {
-        await crawler.stop();
-        delete runningCrawler[zip];
-        crawlerCache.removeKey(zip);
-        crawlerCache.save(true);
-        bot.sendMessage(id, `🛑 Impfterminsuche in ${city} gestoppt.`);
-      } catch (error) {}
-    } else {
-      bot.sendMessage(
-        id,
-        `ℹ️ Keinen aktiven Crawler zur Impfterminsuche in ${city} gefunden.`
-      );
-    }
-  } else {
-    bot.sendMessage(
-      id,
-      `ℹ️ Keinen aktiven Crawler zur Impfterminsuche in ${cityInput} gefunden.`
+  if (!userNotifications || !userNotifications.includes(zip)) {
+    return bot.sendMessage(id, `ℹ️ Keine aktive Suche in ${city}.`);
+  }
+
+  // Remove notification
+  if (userNotifications.includes(zip)) {
+    const removedNotifications = userNotifications.filter(
+      (notificationZip) => notificationZip !== zip
     );
+    notifyCache.setKey(id, removedNotifications);
+    notifyCache.save(true);
+    console.log(notifyCache.all());
+    bot.sendMessage(id, `🛑 Impfterminsuche in ${city} gestoppt.`);
+  }
+
+  // Stop crawler if it was the only notification
+  let isSubscribed = false;
+  Object.values(notifyCache.all()).forEach((notificationArray) => {
+    if (notificationArray.includes(zip)) {
+      isSubscribed = true;
+    }
+  });
+  if (!isSubscribed) {
+    const crawler = runningCrawler[zip].instance;
+    try {
+      await crawler.destroy();
+      delete runningCrawler[zip];
+      crawlerCache.removeKey(zip);
+      crawlerCache.save(true);
+    } catch (error) {}
   }
 });
 
@@ -250,11 +263,16 @@ bot.onText(/\/cities$/, (msg) => {
 bot.onText(/\/running$/, (msg) => {
   const { id } = msg.chat;
 
+  const notifications = notifyCache.all();
+  const userNotifications = notifications[id];
+  if (!userNotifications || userNotifications.length === 0) {
+    return bot.sendMessage(id, `💤 Keine laufenden Suchen.`);
+  }
+
   let output = "";
-  console.log(runningCrawler);
-  Object.values(runningCrawler).forEach(({ city }) => {
+  userNotifications.map((zip) => {
+    const { city } = findCity(zip);
     output = output + `\n - ${city.substring(0, 50)}...`;
   });
-  console.log(output);
   bot.sendMessage(id, `👀 Laufende Suchen: \n ${output}`);
 });

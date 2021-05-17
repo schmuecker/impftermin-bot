@@ -10,12 +10,16 @@ class Crawler {
     this.page = undefined;
     this.input = undefined;
     this.callback = undefined;
+    this.isAlive = true;
   }
 
-  async stop() {
+  async destroy() {
+    this.isAlive = false;
     if (this.page) {
       await this.page.close();
       this.page = undefined;
+    }
+    if (this.browser) {
       await this.browser.close();
       this.browser = undefined;
     }
@@ -38,6 +42,10 @@ class Crawler {
   }
 
   async start(input, callback = console.log) {
+    if (!this.isAlive) {
+      return;
+    }
+
     try {
       this.input = input;
       this.callback = callback;
