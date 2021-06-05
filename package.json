@@ -5,11 +5,12 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint",
-    "dev": "nodemon ./src/telegram/index.js",
-    "start": "pm2 start ./src/telegram/index.js --name 'ImpfAlarm' --log ./logs/telegram.log.txt --time",
-    "restart": "pm2 restart ./src/telegram/index.js --name 'ImpfAlarm' --log ./logs/telegram.log.txt --time"
+    "dev": "nodemon ./src/index.js",
+    "start": "pm2 start ./src/index.js --name 'ImpfAlarm' --log ./logs/telegram.log.txt --time",
+    "restart": "pm2 restart ./src/index.js --name 'ImpfAlarm' --log ./logs/telegram.log.txt --time"
   },
   "dependencies": {
+    "dotenv": "^10.0.0",
     "dset": "^3.1.0",
     "flat-cache": "^3.0.4",
     "klona": "^2.0.4",
