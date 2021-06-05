@@ -3,7 +3,7 @@ const { klona } = require("klona/full");
 const { dset } = require("dset/merge");
 var flatCache = require("flat-cache");
 const TelegramBot = require("node-telegram-bot-api");
-const Crawler = require("../crawler");
+const Crawler = require("../impfterminservice/codesuche/codesuche");
 const cities = require("../data/cities.json");
 
 /* INIT TELEGRAM BOT */
@@ -14,7 +14,7 @@ const bot = new TelegramBot(token, { polling: true });
 /* GET CRAWLER + NOTIFICATIONS FROM CACHE*/
 
 // eslint-disable-next-line no-undef
-const cachePath = path.join(__dirname, "../../cache");
+const cachePath = path.join(__dirname, "../../../cache");
 
 const crawlerCache = flatCache.load("crawlers", cachePath);
 console.log("Get crawler from cache", crawlerCache.all());
