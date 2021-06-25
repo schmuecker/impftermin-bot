@@ -6,10 +6,13 @@ const TelegramBot = require("node-telegram-bot-api");
 const Crawler = require("../impfterminservice/codesuche/codesuche");
 const cities = require("../../data/cities.json");
 
+require("dotenv").config({ path: "../../../.env" });
+
 /* INIT TELEGRAM BOT */
 
 const startBot = () => {
-  const token = "1785949874:AAFrWn_NL9oxxv0Pi3kQ7lyt_q9LfZYInSY";
+  // eslint-disable-next-line no-undef
+  const token = process.env.TELEGRAM_BOT_TOKEN;
   const bot = new TelegramBot(token, { polling: true });
 
   /* GET CRAWLER + NOTIFICATIONS FROM CACHE*/
